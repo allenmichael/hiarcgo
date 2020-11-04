@@ -8,10 +8,11 @@
  */
 
 package gohiarc
+
 // CreateClassificationRequest struct for CreateClassificationRequest
 type CreateClassificationRequest struct {
-	Key string `json:"key,omitempty"`
-	Name string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Metadata map[string]map[string]interface{} `json:"metadata,omitempty"`
+	Key         string                 `json:"key,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }

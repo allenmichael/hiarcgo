@@ -8,17 +8,19 @@
  */
 
 package gohiarc
+
 import (
 	"time"
 )
+
 // Entity struct for Entity
 type Entity struct {
-	Key string `json:"key,omitempty"`
-	Type string `json:"type,omitempty"`
-	Name string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Metadata map[string]map[string]interface{} `json:"metadata,omitempty"`
-	CreatedBy string `json:"createdBy,omitempty"`
-	CreatedAt time.Time `json:"createdAt,omitempty"`
-	ModifiedAt time.Time `json:"modifiedAt,omitempty"`
+	Key         string                 `json:"key,omitempty"`
+	Type        string                 `json:"type,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+	CreatedBy   string                 `json:"createdBy,omitempty"`
+	CreatedAt   time.Time              `json:"createdAt,omitempty"`
+	ModifiedAt  time.Time              `json:"modifiedAt,omitempty"`
 }

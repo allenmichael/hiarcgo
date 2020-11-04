@@ -8,11 +8,12 @@
  */
 
 package gohiarc
+
 // CreateFileRequest struct for CreateFileRequest
 type CreateFileRequest struct {
-	Key string `json:"key,omitempty"`
-	Name string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Metadata map[string]map[string]interface{} `json:"metadata,omitempty"`
-	StorageService string `json:"storageService,omitempty"`
+	Key            string                 `json:"key,omitempty"`
+	Name           string                 `json:"name,omitempty"`
+	Description    string                 `json:"description,omitempty"`
+	Metadata       map[string]interface{} `json:"metadata,omitempty"`
+	StorageService string                 `json:"storageService,omitempty"`
 }
