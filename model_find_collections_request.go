@@ -8,7 +8,8 @@
  */
 
 package gohiarc
+
 // FindCollectionsRequest struct for FindCollectionsRequest
 type FindCollectionsRequest struct {
-	Query []map[string]map[string]interface{} `json:"query,omitempty"`
+	Query []map[string]interface{} `json:"query,omitempty"`
 }

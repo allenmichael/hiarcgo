@@ -8,7 +8,8 @@
  */
 
 package gohiarc
+
 // FindEntityRequest struct for FindEntityRequest
 type FindEntityRequest struct {
-	Query []map[string]map[string]interface{} `json:"query,omitempty"`
+	Query []map[string]interface{} `json:"query,omitempty"`
 }

@@ -8,7 +8,8 @@
  */
 
 package gohiarc
+
 // FindGroupsRequest struct for FindGroupsRequest
 type FindGroupsRequest struct {
-	Query []map[string]map[string]interface{} `json:"query,omitempty"`
+	Query []map[string]interface{} `json:"query,omitempty"`
 }

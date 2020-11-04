@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **Type** | **string** |  | [optional] 
 **Name** | **string** |  | [optional] 
 **Description** | **string** |  | [optional] 
-**Metadata** | **map[string]map[string]interface{}** |  | [optional] 
+**Metadata** | **map[string]interface{}** |  | [optional] 
 **CreatedBy** | **string** |  | [optional] 
 **CreatedAt** | [**time.Time**](time.Time.md) |  | [optional] 
 **ModifiedAt** | [**time.Time**](time.Time.md) |  | [optional] 

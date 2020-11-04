@@ -8,7 +8,8 @@
  */
 
 package gohiarc
+
 // FindClassificationsRequest struct for FindClassificationsRequest
 type FindClassificationsRequest struct {
-	Query []map[string]map[string]interface{} `json:"query,omitempty"`
+	Query []map[string]interface{} `json:"query,omitempty"`
 }
