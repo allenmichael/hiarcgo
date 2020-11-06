@@ -10,13 +10,21 @@
 package gohiarc
 
 import (
+	"bytes"
 	_context "context"
+	"encoding/json"
+	"io"
 	_ioutil "io/ioutil"
+	"log"
+	"mime/multipart"
+	"net/http"
 	_nethttp "net/http"
 	_neturl "net/url"
-	"strings"
-	"github.com/antihax/optional"
 	"os"
+	"strings"
+
+	"github.com/antihax/optional"
+	"golang.org/x/oauth2"
 )
 
 // Linger please
@@ -29,7 +37,7 @@ type FileApiService service
 
 // AddClassificationToFileOpts Optional parameters for the method 'AddClassificationToFile'
 type AddClassificationToFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -38,7 +46,7 @@ AddClassificationToFile Add a Classification to a File
  * @param key Key of file
  * @param addClassificationToFileRequest Classification information
  * @param optional nil or *AddClassificationToFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return map[string]interface{}
 */
 func (a *FileApiService) AddClassificationToFile(ctx _context.Context, key string, addClassificationToFileRequest AddClassificationToFileRequest, localVarOptionals *AddClassificationToFileOpts) (map[string]interface{}, *_nethttp.Response, error) {
@@ -53,7 +61,7 @@ func (a *FileApiService) AddClassificationToFile(ctx _context.Context, key strin
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/classifications"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -131,7 +139,7 @@ func (a *FileApiService) AddClassificationToFile(ctx _context.Context, key strin
 
 // AddGroupToFileOpts Optional parameters for the method 'AddGroupToFile'
 type AddGroupToFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -140,7 +148,7 @@ AddGroupToFile Give a group access to a File
  * @param key Key of file
  * @param addGroupToFileRequest Group information
  * @param optional nil or *AddGroupToFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return map[string]interface{}
 */
 func (a *FileApiService) AddGroupToFile(ctx _context.Context, key string, addGroupToFileRequest AddGroupToFileRequest, localVarOptionals *AddGroupToFileOpts) (map[string]interface{}, *_nethttp.Response, error) {
@@ -155,7 +163,7 @@ func (a *FileApiService) AddGroupToFile(ctx _context.Context, key string, addGro
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/groups"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -233,7 +241,7 @@ func (a *FileApiService) AddGroupToFile(ctx _context.Context, key string, addGro
 
 // AddRetentionPolicyToFileOpts Optional parameters for the method 'AddRetentionPolicyToFile'
 type AddRetentionPolicyToFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -242,7 +250,7 @@ AddRetentionPolicyToFile Add a Retention Policy to a File
  * @param key Key of file
  * @param addRetentionPolicyToFileRequest Retention Policy information
  * @param optional nil or *AddRetentionPolicyToFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return map[string]interface{}
 */
 func (a *FileApiService) AddRetentionPolicyToFile(ctx _context.Context, key string, addRetentionPolicyToFileRequest AddRetentionPolicyToFileRequest, localVarOptionals *AddRetentionPolicyToFileOpts) (map[string]interface{}, *_nethttp.Response, error) {
@@ -257,7 +265,7 @@ func (a *FileApiService) AddRetentionPolicyToFile(ctx _context.Context, key stri
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/retentionpolicies"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -335,7 +343,7 @@ func (a *FileApiService) AddRetentionPolicyToFile(ctx _context.Context, key stri
 
 // AddUserToFileOpts Optional parameters for the method 'AddUserToFile'
 type AddUserToFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -344,7 +352,7 @@ AddUserToFile Give a user access to a File
  * @param key Key of file
  * @param addUserToFileRequest User information
  * @param optional nil or *AddUserToFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return map[string]interface{}
 */
 func (a *FileApiService) AddUserToFile(ctx _context.Context, key string, addUserToFileRequest AddUserToFileRequest, localVarOptionals *AddUserToFileOpts) (map[string]interface{}, *_nethttp.Response, error) {
@@ -359,7 +367,7 @@ func (a *FileApiService) AddUserToFile(ctx _context.Context, key string, addUser
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/users"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -437,9 +445,9 @@ func (a *FileApiService) AddUserToFile(ctx _context.Context, key string, addUser
 
 // AddVersionOpts Optional parameters for the method 'AddVersion'
 type AddVersionOpts struct {
-    XHiarcUserKey optional.String
-    Request optional.String
-    File optional.Interface
+	XHiarcUserKey optional.String
+	Request       optional.String
+	File          optional.Interface
 }
 
 /*
@@ -447,9 +455,9 @@ AddVersion Add a new File Version
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param key Key of file to add a version
  * @param optional nil or *AddVersionOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
- * @param "Request" (optional.String) - 
- * @param "File" (optional.Interface of *os.File) - 
+ * @param "XHiarcUserKey" (optional.String) -
+ * @param "Request" (optional.String) -
+ * @param "File" (optional.Interface of *os.File) -
 @return File
 */
 func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOptionals *AddVersionOpts) (File, *_nethttp.Response, error) {
@@ -464,7 +472,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOp
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/versions"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -499,7 +507,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOp
 		localVarFileOk := false
 		localVarFile, localVarFileOk = localVarOptionals.File.Value().(*os.File)
 		if !localVarFileOk {
-				return localVarReturnValue, nil, reportError("file should be *os.File")
+			return localVarReturnValue, nil, reportError("file should be *os.File")
 		}
 	}
 	if localVarFile != nil {
@@ -558,7 +566,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOp
 
 // AttachToExisitingFileOpts Optional parameters for the method 'AttachToExisitingFile'
 type AttachToExisitingFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -567,7 +575,7 @@ AttachToExisitingFile Attach to an existing File
  * @param key Key of file to attach to
  * @param attachToExistingFileRequest File information
  * @param optional nil or *AttachToExisitingFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return File
 */
 func (a *FileApiService) AttachToExisitingFile(ctx _context.Context, key string, attachToExistingFileRequest AttachToExistingFileRequest, localVarOptionals *AttachToExisitingFileOpts) (File, *_nethttp.Response, error) {
@@ -582,7 +590,7 @@ func (a *FileApiService) AttachToExisitingFile(ctx _context.Context, key string,
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/attach"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -660,7 +668,7 @@ func (a *FileApiService) AttachToExisitingFile(ctx _context.Context, key string,
 
 // CopyFileOpts Optional parameters for the method 'CopyFile'
 type CopyFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -669,7 +677,7 @@ CopyFile Copy a File
  * @param key Key of file to attach to
  * @param copyFileRequest File information
  * @param optional nil or *CopyFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return File
 */
 func (a *FileApiService) CopyFile(ctx _context.Context, key string, copyFileRequest CopyFileRequest, localVarOptionals *CopyFileOpts) (File, *_nethttp.Response, error) {
@@ -684,7 +692,7 @@ func (a *FileApiService) CopyFile(ctx _context.Context, key string, copyFileRequ
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/copy"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -762,8 +770,8 @@ func (a *FileApiService) CopyFile(ctx _context.Context, key string, copyFileRequ
 
 // CreateDirectUploadUrlOpts Optional parameters for the method 'CreateDirectUploadUrl'
 type CreateDirectUploadUrlOpts struct {
-    XHiarcUserKey optional.String
-    ExpiresInSeconds optional.Int32
+	XHiarcUserKey    optional.String
+	ExpiresInSeconds optional.Int32
 }
 
 /*
@@ -866,44 +874,28 @@ func (a *FileApiService) CreateDirectUploadUrl(ctx _context.Context, createDirec
 
 // CreateFileOpts Optional parameters for the method 'CreateFile'
 type CreateFileOpts struct {
-    XHiarcUserKey optional.String
-    Request optional.String
-    File optional.Interface
+	XHiarcUserKey optional.String
 }
 
 /*
 CreateFile Create a File
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @param optional nil or *CreateFileOpts - Optional Parameters:
- * @param "XHiarcUserKey" (optional.String) - 
- * @param "Request" (optional.String) - 
- * @param "File" (optional.Interface of *os.File) - 
+ * @param "XHiarcUserKey" (optional.String) -
 @return File
 */
-func (a *FileApiService) CreateFile(ctx _context.Context, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
+func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, chunkSize int, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPost
-		localVarPostBody     interface{}
-		localVarFormFileName string
-		localVarFileName     string
-		localVarFileBytes    []byte
-		localVarReturnValue  File
+		localVarReturnValue File
 	)
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files"
-	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := _neturl.Values{}
-	localVarFormParams := _neturl.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"multipart/form-data"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	if chunkSize == 0 {
+		chunkSize = 1000
 	}
+
+	req, err := uploadFileRequest(localVarPath, filepath, chunkSize, cfr)
 
 	// to determine the Accept header
 	localVarHTTPHeaderAccepts := []string{"application/json"}
@@ -911,29 +903,12 @@ func (a *FileApiService) CreateFile(ctx _context.Context, localVarOptionals *Cre
 	// set Accept header
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
-		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+		req.Header.Set("Accept", localVarHTTPHeaderAccept)
 	}
 	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
-		localVarHeaderParams["X-Hiarc-User-Key"] = parameterToString(localVarOptionals.XHiarcUserKey.Value(), "")
+		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
 	}
-	if localVarOptionals != nil && localVarOptionals.Request.IsSet() {
-		localVarFormParams.Add("request", parameterToString(localVarOptionals.Request.Value(), ""))
-	}
-	localVarFormFileName = "file"
-	var localVarFile *os.File
-	if localVarOptionals != nil && localVarOptionals.File.IsSet() {
-		localVarFileOk := false
-		localVarFile, localVarFileOk = localVarOptionals.File.Value().(*os.File)
-		if !localVarFileOk {
-				return localVarReturnValue, nil, reportError("file should be *os.File")
-		}
-	}
-	if localVarFile != nil {
-		fbs, _ := _ioutil.ReadAll(localVarFile)
-		localVarFileBytes = fbs
-		localVarFileName = localVarFile.Name()
-		localVarFile.Close()
-	}
+
 	if ctx != nil {
 		// API Key Authentication
 		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
@@ -943,15 +918,39 @@ func (a *FileApiService) CreateFile(ctx _context.Context, localVarOptionals *Cre
 			} else {
 				key = auth.Key
 			}
-			localVarHeaderParams["X-Hiarc-Api-Key"] = key
+			req.Header.Set("X-Hiarc-Api-Key", key)
 		}
 	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
-	if err != nil {
-		return localVarReturnValue, nil, err
-	}
+	if ctx != nil {
+		// add context to the request
+		req = req.WithContext(ctx)
 
-	localVarHTTPResponse, err := a.client.callAPI(r)
+		// Walk through any authentication.
+
+		// OAuth2 authentication
+		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
+			// We were able to grab an oauth2 token from the context
+			var latestToken *oauth2.Token
+			if latestToken, err = tok.Token(); err != nil {
+				return File{}, nil, err
+			}
+
+			latestToken.SetAuthHeader(req)
+		}
+
+		// Basic HTTP Authentication
+		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
+			req.SetBasicAuth(auth.UserName, auth.Password)
+		}
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			req.Header.Add("Authorization", "Bearer "+auth)
+		}
+	}
+	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -984,7 +983,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, localVarOptionals *Cre
 
 // DeleteFileOpts Optional parameters for the method 'DeleteFile'
 type DeleteFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1007,7 +1006,7 @@ func (a *FileApiService) DeleteFile(ctx _context.Context, key string, localVarOp
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1083,7 +1082,7 @@ func (a *FileApiService) DeleteFile(ctx _context.Context, key string, localVarOp
 
 // DownloadFileOpts Optional parameters for the method 'DownloadFile'
 type DownloadFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1106,7 +1105,7 @@ func (a *FileApiService) DownloadFile(ctx _context.Context, key string, localVar
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/download"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1182,7 +1181,7 @@ func (a *FileApiService) DownloadFile(ctx _context.Context, key string, localVar
 
 // GetCollectionsForFileOpts Optional parameters for the method 'GetCollectionsForFile'
 type GetCollectionsForFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1205,7 +1204,7 @@ func (a *FileApiService) GetCollectionsForFile(ctx _context.Context, key string,
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/collections"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1281,8 +1280,8 @@ func (a *FileApiService) GetCollectionsForFile(ctx _context.Context, key string,
 
 // GetDirectDownloadUrlOpts Optional parameters for the method 'GetDirectDownloadUrl'
 type GetDirectDownloadUrlOpts struct {
-    XHiarcUserKey optional.String
-    ExpiresInSeconds optional.Int32
+	XHiarcUserKey    optional.String
+	ExpiresInSeconds optional.Int32
 }
 
 /*
@@ -1306,7 +1305,7 @@ func (a *FileApiService) GetDirectDownloadUrl(ctx _context.Context, key string, 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/directdownloadurl"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1385,7 +1384,7 @@ func (a *FileApiService) GetDirectDownloadUrl(ctx _context.Context, key string, 
 
 // GetFileOpts Optional parameters for the method 'GetFile'
 type GetFileOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1408,7 +1407,7 @@ func (a *FileApiService) GetFile(ctx _context.Context, key string, localVarOptio
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1484,7 +1483,7 @@ func (a *FileApiService) GetFile(ctx _context.Context, key string, localVarOptio
 
 // GetRetentionPoliciesOpts Optional parameters for the method 'GetRetentionPolicies'
 type GetRetentionPoliciesOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1507,7 +1506,7 @@ func (a *FileApiService) GetRetentionPolicies(ctx _context.Context, key string, 
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/retentionpolicies"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1583,7 +1582,7 @@ func (a *FileApiService) GetRetentionPolicies(ctx _context.Context, key string, 
 
 // GetVersionsOpts Optional parameters for the method 'GetVersions'
 type GetVersionsOpts struct {
-    XHiarcUserKey optional.String
+	XHiarcUserKey optional.String
 }
 
 /*
@@ -1606,7 +1605,7 @@ func (a *FileApiService) GetVersions(ctx _context.Context, key string, localVarO
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/versions"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1699,7 +1698,7 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}"
-	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")) , -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := _neturl.Values{}
@@ -1770,4 +1769,91 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 	}
 
 	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+func uploadFileRequest(uri string, filePath string, chunkSize int, params CreateFileRequest) (*http.Request, error) {
+	//open file and retrieve info
+	file, _ := os.Open(filePath)
+	fi, _ := file.Stat()
+	defer file.Close()
+
+	//buffer for storing multipart data
+	byteBuf := &bytes.Buffer{}
+
+	//part: parameters
+	mpWriter := multipart.NewWriter(byteBuf)
+	jsonString, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	mpWriter.WriteField("request", string(jsonString))
+
+	//part: file
+	mpWriter.CreateFormFile("file", fi.Name())
+	contentType := mpWriter.FormDataContentType()
+	log.Println(contentType)
+
+	nmulti := byteBuf.Len()
+	multi := make([]byte, nmulti)
+	_, err = byteBuf.Read(multi)
+	if err != nil {
+		return nil, err
+	}
+
+	//part: latest boundary
+	//when multipart closed, latest boundary is added
+	mpWriter.Close()
+	nboundary := byteBuf.Len()
+	lastBoundary := make([]byte, nboundary)
+	_, err = byteBuf.Read(lastBoundary)
+	if err != nil {
+		return nil, err
+	}
+
+	//calculate content length
+	totalSize := int64(nmulti) + fi.Size() + int64(nboundary)
+	log.Printf("Content length = %v byte(s)\n", totalSize)
+
+	//use pipe to pass request
+	rd, wr := io.Pipe()
+	defer rd.Close()
+
+	go func() {
+		defer wr.Close()
+
+		//write multipart
+		_, err = wr.Write(multi)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//write file
+		buf := make([]byte, chunkSize)
+		for {
+			n, err := file.Read(buf)
+			if err != nil {
+				break
+			}
+			_, err = wr.Write(buf[:n])
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		//write boundary
+		_, err = wr.Write(lastBoundary)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	//construct request with rd
+	req, err := http.NewRequest("POST", uri, rd)
+	if err != nil {
+		return nil, err
+	}
+	// req.Header.Set("Content-Type", contentType)
+	// req.Header.Set("X-Hiarc-Api-Key", token)
+	req.ContentLength = totalSize
+
+	return req, nil
 }
