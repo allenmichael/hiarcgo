@@ -895,62 +895,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, chunk
 		chunkSize = 1000
 	}
 
-	req, err := uploadFileRequest(localVarPath, filepath, chunkSize, cfr)
-
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		req.Header.Set("Accept", localVarHTTPHeaderAccept)
-	}
-	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
-		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
-	}
-
-	if ctx != nil {
-		// API Key Authentication
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			req.Header.Set("X-Hiarc-Api-Key", key)
-		}
-	}
-	if ctx != nil {
-		// add context to the request
-		req = req.WithContext(ctx)
-
-		// Walk through any authentication.
-
-		// OAuth2 authentication
-		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
-			// We were able to grab an oauth2 token from the context
-			var latestToken *oauth2.Token
-			if latestToken, err = tok.Token(); err != nil {
-				return File{}, nil, err
-			}
-
-			latestToken.SetAuthHeader(req)
-		}
-
-		// Basic HTTP Authentication
-		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
-			req.SetBasicAuth(auth.UserName, auth.Password)
-		}
-
-		// AccessToken Authentication
-		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
-			req.Header.Add("Authorization", "Bearer "+auth)
-		}
-	}
-	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
-
-	localVarHTTPResponse, err := a.client.callAPI(req)
+	localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1771,7 +1716,7 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-func uploadFileRequest(uri string, filePath string, chunkSize int, params CreateFileRequest) (*http.Request, error) {
+func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, uri string, filePath string, chunkSize int, params CreateFileRequest) (*http.Response, error) {
 	//open file and retrieve info
 	file, _ := os.Open(filePath)
 	fi, _ := file.Stat()
@@ -1851,8 +1796,58 @@ func uploadFileRequest(uri string, filePath string, chunkSize int, params Create
 	if err != nil {
 		return nil, err
 	}
-	// req.Header.Set("Content-Type", contentType)
-	// req.Header.Set("X-Hiarc-Api-Key", token)
+
+	if ctx != nil {
+		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
+			var key string
+			if auth.Prefix != "" {
+				key = auth.Prefix + " " + auth.Key
+			} else {
+				key = auth.Key
+			}
+			req.Header.Set("X-Hiarc-Api-Key", key)
+		}
+		// add context to the request
+		req = req.WithContext(ctx)
+
+		// Walk through any authentication.
+
+		// OAuth2 authentication
+		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
+			// We were able to grab an oauth2 token from the context
+			var latestToken *oauth2.Token
+			if latestToken, err = tok.Token(); err != nil {
+				return nil, err
+			}
+
+			latestToken.SetAuthHeader(req)
+		}
+
+		// Basic HTTP Authentication
+		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
+			req.SetBasicAuth(auth.UserName, auth.Password)
+		}
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			req.Header.Add("Authorization", "Bearer "+auth)
+		}
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		req.Header.Set("Accept", localVarHTTPHeaderAccept)
+	}
+	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
+		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
+	}
+
+	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
+
 	req.ContentLength = totalSize
 
 	return req, nil
