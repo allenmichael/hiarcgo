@@ -925,6 +925,15 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	}
 
 	if ctx != nil {
+		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
+			var key string
+			if auth.Prefix != "" {
+				key = auth.Prefix + " " + auth.Key
+			} else {
+				key = auth.Key
+			}
+			req.Header.Set("X-Hiarc-Api-Key", key)
+		}
 		// add context to the request
 		req = req.WithContext(ctx)
 
