@@ -883,18 +883,90 @@ CreateFile Create a File
  * @param "XHiarcUserKey" (optional.String) -
 @return File
 */
-func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, chunkSize int, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
+func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
 	var (
 		localVarReturnValue File
 	)
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files"
-	if chunkSize == 0 {
-		chunkSize = 1000
+	r, w := io.Pipe()
+	m := multipart.NewWriter(w)
+	go func() {
+		defer w.Close()
+		defer m.Close()
+
+		jsonString, _ := json.Marshal(cfr)
+		log.Println(string(jsonString))
+		m.WriteField("request", string(jsonString))
+
+		file, err := os.Open(filepath)
+		if err != nil {
+			return
+		}
+		fi, err := file.Stat()
+		if err != nil {
+			return
+		}
+		part, err := m.CreateFormFile("file", fi.Name())
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		if _, err = io.Copy(part, file); err != nil {
+			return
+		}
+	}()
+
+	//construct request with rd
+	req, err := http.NewRequest("POST", localVarPath, r)
+	if err != nil {
+		return File{}, nil, err
 	}
 
-	localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr, a.client.cfg.UserAgent)
+	if ctx != nil {
+		// add context to the request
+		req = req.WithContext(ctx)
+
+		// Walk through any authentication.
+
+		// OAuth2 authentication
+		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
+			// We were able to grab an oauth2 token from the context
+			var latestToken *oauth2.Token
+			if latestToken, err = tok.Token(); err != nil {
+				return File{}, nil, err
+			}
+
+			latestToken.SetAuthHeader(req)
+		}
+
+		// Basic HTTP Authentication
+		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
+			req.SetBasicAuth(auth.UserName, auth.Password)
+		}
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			req.Header.Add("Authorization", "Bearer "+auth)
+		}
+
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		req.Header.Set("Accept", localVarHTTPHeaderAccept)
+	}
+	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
+		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
+	}
+	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	// localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr, a.client.cfg.UserAgent)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1751,17 +1823,8 @@ func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, 
 	}
 
 	if ctx != nil {
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			req.Header.Set("X-Hiarc-Api-Key", key)
-		}
 		// add context to the request
-		req = req.WithContext(ctx)
+		localVarRequest = localVarRequest.WithContext(ctx)
 
 		// Walk through any authentication.
 
@@ -1773,18 +1836,19 @@ func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, 
 				return nil, err
 			}
 
-			latestToken.SetAuthHeader(req)
+			latestToken.SetAuthHeader(localVarRequest)
 		}
 
 		// Basic HTTP Authentication
 		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
-			req.SetBasicAuth(auth.UserName, auth.Password)
+			localVarRequest.SetBasicAuth(auth.UserName, auth.Password)
 		}
 
 		// AccessToken Authentication
 		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
-			req.Header.Add("Authorization", "Bearer "+auth)
+			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
 		}
+
 	}
 
 	// to determine the Accept header
