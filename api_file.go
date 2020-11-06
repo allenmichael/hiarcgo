@@ -10,7 +10,6 @@
 package gohiarc
 
 import (
-	"bytes"
 	_context "context"
 	"encoding/json"
 	"io"
@@ -1717,82 +1716,36 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 }
 
 func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, uri string, filePath string, chunkSize int, params CreateFileRequest, useragent string) (*http.Response, error) {
-	//open file and retrieve info
-	file, _ := os.Open(filePath)
-	fi, _ := file.Stat()
-	defer file.Close()
-
-	//buffer for storing multipart data
-	byteBuf := &bytes.Buffer{}
-
-	//part: parameters
-	mpWriter := multipart.NewWriter(byteBuf)
-	jsonString, err := json.Marshal(params)
-	if err != nil {
-		return nil, err
-	}
-	mpWriter.WriteField("request", string(jsonString))
-
-	//part: file
-	mpWriter.CreateFormFile("file", fi.Name())
-	contentType := mpWriter.FormDataContentType()
-	log.Println(contentType)
-
-	nmulti := byteBuf.Len()
-	multi := make([]byte, nmulti)
-	_, err = byteBuf.Read(multi)
-	if err != nil {
-		return nil, err
-	}
-
-	//part: latest boundary
-	//when multipart closed, latest boundary is added
-	mpWriter.Close()
-	nboundary := byteBuf.Len()
-	lastBoundary := make([]byte, nboundary)
-	_, err = byteBuf.Read(lastBoundary)
-	if err != nil {
-		return nil, err
-	}
-
-	//calculate content length
-	totalSize := int64(nmulti) + fi.Size() + int64(nboundary)
-	log.Printf("Content length = %v byte(s)\n", totalSize)
-
-	//use pipe to pass request
-	rd, wr := io.Pipe()
-	defer rd.Close()
-
+	r, w := io.Pipe()
+	m := multipart.NewWriter(w)
 	go func() {
-		defer wr.Close()
+		defer w.Close()
+		defer m.Close()
 
-		//write multipart
-		_, err = wr.Write(multi)
-		if err != nil {
-			log.Fatal(err)
-		}
+		jsonString, _ := json.Marshal(params)
+		log.Println(string(jsonString))
+		m.WriteField("request", string(jsonString))
 
-		//write file
-		buf := make([]byte, chunkSize)
-		for {
-			n, err := file.Read(buf)
-			if err != nil {
-				break
-			}
-			_, err = wr.Write(buf[:n])
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		//write boundary
-		_, err = wr.Write(lastBoundary)
+		file, err := os.Open(filePath)
 		if err != nil {
-			log.Fatal(err)
+			return
+		}
+		fi, err := file.Stat()
+		if err != nil {
+			return
+		}
+		part, err := m.CreateFormFile("file", fi.Name())
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		if _, err = io.Copy(part, file); err != nil {
+			return
 		}
 	}()
 
 	//construct request with rd
-	req, err := http.NewRequest("POST", uri, rd)
+	req, err := http.NewRequest("POST", uri, r)
 	if err != nil {
 		return nil, err
 	}
@@ -1847,7 +1800,19 @@ func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, 
 	}
 	req.Header.Add("User-Agent", useragent)
 
-	req.ContentLength = totalSize
+	//process request
 	client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// } else {
+	// 	log.Println(resp.StatusCode)
+	// 	log.Println(resp.Header)
+
+	// 	body := &bytes.Buffer{}
+	// 	_, _ = body.ReadFrom(resp.Body)
+	// 	resp.Body.Close()
+	// 	log.Println(body)
+	// }
 	return client.Do(req)
 }
