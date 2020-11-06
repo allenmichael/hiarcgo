@@ -895,7 +895,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, chunk
 		chunkSize = 1000
 	}
 
-	localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr)
+	localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr, a.client.cfg.UserAgent)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1716,7 +1716,7 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
-func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, uri string, filePath string, chunkSize int, params CreateFileRequest) (*http.Response, error) {
+func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, uri string, filePath string, chunkSize int, params CreateFileRequest, useragent string) (*http.Response, error) {
 	//open file and retrieve info
 	file, _ := os.Open(filePath)
 	fi, _ := file.Stat()
@@ -1845,10 +1845,9 @@ func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, 
 	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
 		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
 	}
-
-	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
+	req.Header.Add("User-Agent", useragent)
 
 	req.ContentLength = totalSize
-
-	return req, nil
+	client := &http.Client{}
+	return client.Do(req)
 }
