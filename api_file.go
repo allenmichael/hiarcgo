@@ -932,12 +932,12 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	m := multipart.NewWriter(w)
 	jsonString, _ := json.Marshal(cfr)
 	log.Println(string(jsonString))
-	m.WriteField("request", string(jsonString))
 	log.Println("wrote json...")
 	go func() {
 		defer w.Close()
 		defer m.Close()
 
+		m.WriteField("request", string(jsonString))
 		file, err := os.Open(filepath)
 		if err != nil {
 			return
