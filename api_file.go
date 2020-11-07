@@ -1823,6 +1823,11 @@ func (a *FileApiService) GetVersions(ctx _context.Context, key string, localVarO
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+// UpdateFileOpts Optional parameters for the method 'UpdateFile'
+type UpdateFileOpts struct {
+	XHiarcUserKey optional.String
+}
+
 /*
 UpdateFile Update a File
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
@@ -1830,7 +1835,7 @@ UpdateFile Update a File
  * @param updateFileRequest File information
 @return File
 */
-func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFileRequest UpdateFileRequest) (File, *_nethttp.Response, error) {
+func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFileRequest UpdateFileRequest, localVarOptionals *UpdateFileOpts) (File, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod   = _nethttp.MethodPut
 		localVarPostBody     interface{}
@@ -1864,6 +1869,9 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
+		localVarHeaderParams["X-Hiarc-User-Key"] = parameterToString(localVarOptionals.XHiarcUserKey.Value(), "")
 	}
 	// body params
 	localVarPostBody = &updateFileRequest
