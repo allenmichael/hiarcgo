@@ -893,7 +893,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files"
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := _neturl.Values{}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"multipart/form-data"}
