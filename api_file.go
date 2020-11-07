@@ -934,6 +934,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	jsonString, _ := json.Marshal(cfr)
 	log.Println(string(jsonString))
 	m.WriteField("request", string(jsonString))
+	log.Println("wrote json...")
 	go func() {
 		defer w.Close()
 		defer m.Close()
@@ -956,10 +957,11 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		}
 	}()
 
+	log.Println("copying file...")
 	// Setup path and query parameters
 	url, err := url.Parse(localVarPath)
 	if err != nil {
-		return File{}, nil, err
+		return localVarReturnValue, nil, err
 	}
 
 	// Override request host, if applicable
@@ -973,20 +975,20 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	}
 
 	// Adding Query Param
-	query := url.Query()
-	for k, v := range localVarQueryParams {
-		for _, iv := range v {
-			query.Add(k, iv)
-		}
-	}
+	// query := url.Query()
+	// for k, v := range localVarQueryParams {
+	// 	for _, iv := range v {
+	// 		query.Add(k, iv)
+	// 	}
+	// }
 
 	// Encode the parameters.
-	url.RawQuery = query.Encode()
-
+	// url.RawQuery = query.Encode()
+	log.Println("About to create localVarRequest...")
 	// Generate a new request
 	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
 	if err != nil {
-		return File{}, nil, err
+		return localVarReturnValue, nil, err
 	}
 	log.Println("Constructing localVarRequest")
 	log.Println(localVarRequest)
@@ -1014,7 +1016,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 			// We were able to grab an oauth2 token from the context
 			var latestToken *oauth2.Token
 			if latestToken, err = tok.Token(); err != nil {
-				return File{}, nil, err
+				return localVarReturnValue, nil, err
 			}
 
 			latestToken.SetAuthHeader(localVarRequest)
@@ -1035,11 +1037,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	for header, value := range a.client.cfg.DefaultHeader {
 		localVarRequest.Header.Add(header, value)
 	}
-
-	// r, err := a.client.prepareRequest(ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
-	// if err != nil {
-	// 	return localVarReturnValue, nil, err
-	// }
 
 	log.Println("About to use localVarRequest")
 	log.Println(localVarRequest)
