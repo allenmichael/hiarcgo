@@ -12,12 +12,14 @@ package gohiarc
 import (
 	_context "context"
 	"encoding/json"
+	"fmt"
 	"io"
 	_ioutil "io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
 	_nethttp "net/http"
+	"net/textproto"
 	"net/url"
 	_neturl "net/url"
 	"os"
@@ -497,6 +499,9 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	jsonString, err := json.Marshal(av)
+	jsonDataHeader := textproto.MIMEHeader{}
+	jsonDataHeader.Set("Content-Type", "application/json")
+	jsonDataHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%s`, "request"))
 	if err != nil {
 		return localVarReturnValue, nil, err
 	}
@@ -504,7 +509,6 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 		defer w.Close()
 		defer m.Close()
 
-		m.WriteField("request", string(jsonString))
 		file, err := os.Open(filepath)
 		if err != nil {
 			return
@@ -513,12 +517,22 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 		if err != nil {
 			return
 		}
-		part, err := m.CreateFormFile("file", fi.Name())
+
+		part, err := m.CreatePart(jsonDataHeader)
+		if err != nil {
+			return
+		}
+		part.Write(jsonString)
+		mediaHeader := textproto.MIMEHeader{}
+		mediaHeader.Set("Content-Type", "application/octet-stream")
+		mediaHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			"file", fi.Name()))
+		mediaPart, err := m.CreatePart(mediaHeader)
 		if err != nil {
 			return
 		}
 		defer file.Close()
-		if _, err = io.Copy(part, file); err != nil {
+		if _, err = io.Copy(mediaPart, file); err != nil {
 			return
 		}
 	}()
