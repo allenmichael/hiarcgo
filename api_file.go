@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"io"
 	_ioutil "io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	_nethttp "net/http"
@@ -931,8 +930,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	jsonString, _ := json.Marshal(cfr)
-	log.Println(string(jsonString))
-	log.Println("wrote json...")
 
 	go func() {
 		defer w.Close()
@@ -957,7 +954,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		}
 	}()
 
-	log.Println("copying file...")
 	// Setup path and query parameters
 	url, err := url.Parse(localVarPath)
 	if err != nil {
@@ -984,14 +980,11 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 
 	// Encode the parameters.
 	// url.RawQuery = query.Encode()
-	log.Println("About to create localVarRequest...")
 	// Generate a new request
 	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
 	if err != nil {
 		return localVarReturnValue, nil, err
 	}
-	log.Println("Constructing localVarRequest")
-	log.Println(localVarRequest)
 
 	// add header parameters, if any
 	if len(localVarHeaderParams) > 0 {
@@ -1039,8 +1032,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	}
 
 	localVarRequest.Header.Set("Content-Type", m.FormDataContentType())
-	log.Println("About to use localVarRequest")
-	log.Println(localVarRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(localVarRequest)
 	if err != nil || localVarHTTPResponse == nil {
