@@ -895,13 +895,13 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	localVarHeaderParams := make(map[string]string)
 
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"multipart/form-data"}
+	// localVarHTTPContentTypes := []string{"multipart/form-data"}
 
 	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
+	// localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	// if localVarHTTPContentType != "" {
+	// 	localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	// }
 
 	// to determine the Accept header
 	localVarHTTPHeaderAccepts := []string{"application/json"}
@@ -933,6 +933,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	jsonString, _ := json.Marshal(cfr)
 	log.Println(string(jsonString))
 	log.Println("wrote json...")
+
 	go func() {
 		defer w.Close()
 		defer m.Close()
