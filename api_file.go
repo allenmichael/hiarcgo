@@ -460,7 +460,7 @@ AddVersion Add a new File Version
  * @param "File" (optional.Interface of *os.File) -
 @return File
 */
-func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath string, av AddVersionToFileRequest, localVarOptionals *AddVersionOpts) (File, *_nethttp.Response, error) {
+func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath string, filename string, av AddVersionToFileRequest, localVarOptionals *AddVersionOpts) (File, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPut
 		localVarReturnValue File
@@ -513,9 +513,12 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 		if err != nil {
 			return
 		}
-		fi, err := file.Stat()
-		if err != nil {
-			return
+		if filename == "" {
+			fi, err := file.Stat()
+			if err != nil {
+				return
+			}
+			filename = fi.Name()
 		}
 
 		part, err := m.CreatePart(jsonDataHeader)
@@ -526,7 +529,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 		mediaHeader := textproto.MIMEHeader{}
 		mediaHeader.Set("Content-Type", "application/octet-stream")
 		mediaHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-			"file", fi.Name()))
+			"file", filename))
 		mediaPart, err := m.CreatePart(mediaHeader)
 		if err != nil {
 			return
@@ -1011,7 +1014,13 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		if err != nil {
 			return
 		}
-		part, err := m.CreateFormFile("file", fi.Name())
+		var filename string
+		if cfr.Name == "" {
+			fi.Name()
+		} else {
+			filename = cfr.Name
+		}
+		part, err := m.CreateFormFile("file", filename)
 		if err != nil {
 			return
 		}
