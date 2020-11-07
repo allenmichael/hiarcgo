@@ -931,13 +931,12 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
+	jsonString, _ := json.Marshal(cfr)
+	log.Println(string(jsonString))
+	m.WriteField("request", string(jsonString))
 	go func() {
 		defer w.Close()
 		defer m.Close()
-
-		jsonString, _ := json.Marshal(cfr)
-		log.Println(string(jsonString))
-		m.WriteField("request", string(jsonString))
 
 		file, err := os.Open(filepath)
 		if err != nil {
@@ -989,6 +988,8 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	if err != nil {
 		return File{}, nil, err
 	}
+	log.Println("Constructing localVarRequest")
+	log.Println(localVarRequest)
 
 	// add header parameters, if any
 	if len(localVarHeaderParams) > 0 {
@@ -1039,6 +1040,9 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	// if err != nil {
 	// 	return localVarReturnValue, nil, err
 	// }
+
+	log.Println("About to use localVarRequest")
+	log.Println(localVarRequest)
 
 	localVarHTTPResponse, err := a.client.callAPI(localVarRequest)
 	if err != nil || localVarHTTPResponse == nil {
@@ -1860,97 +1864,3 @@ func (a *FileApiService) UpdateFile(ctx _context.Context, key string, updateFile
 
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
-
-// func uploadFileRequest(ctx _context.Context, localVarOptionals *CreateFileOpts, uri string, filePath string, chunkSize int, params CreateFileRequest, useragent string) (*http.Response, error) {
-// 	r, w := io.Pipe()
-// 	m := multipart.NewWriter(w)
-// 	go func() {
-// 		defer w.Close()
-// 		defer m.Close()
-
-// 		jsonString, _ := json.Marshal(params)
-// 		log.Println(string(jsonString))
-// 		m.WriteField("request", string(jsonString))
-
-// 		file, err := os.Open(filePath)
-// 		if err != nil {
-// 			return
-// 		}
-// 		fi, err := file.Stat()
-// 		if err != nil {
-// 			return
-// 		}
-// 		part, err := m.CreateFormFile("file", fi.Name())
-// 		if err != nil {
-// 			return
-// 		}
-// 		defer file.Close()
-// 		if _, err = io.Copy(part, file); err != nil {
-// 			return
-// 		}
-// 	}()
-
-// 	//construct request with rd
-// 	req, err := http.NewRequest("POST", uri, r)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	if ctx != nil {
-// 		// add context to the request
-// 		localVarRequest = localVarRequest.WithContext(ctx)
-
-// 		// Walk through any authentication.
-
-// 		// OAuth2 authentication
-// 		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
-// 			// We were able to grab an oauth2 token from the context
-// 			var latestToken *oauth2.Token
-// 			if latestToken, err = tok.Token(); err != nil {
-// 				return nil, err
-// 			}
-
-// 			latestToken.SetAuthHeader(localVarRequest)
-// 		}
-
-// 		// Basic HTTP Authentication
-// 		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
-// 			localVarRequest.SetBasicAuth(auth.UserName, auth.Password)
-// 		}
-
-// 		// AccessToken Authentication
-// 		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
-// 			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
-// 		}
-
-// 	}
-
-// 	// to determine the Accept header
-// 	localVarHTTPHeaderAccepts := []string{"application/json"}
-
-// 	// set Accept header
-// 	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-// 	if localVarHTTPHeaderAccept != "" {
-// 		req.Header.Set("Accept", localVarHTTPHeaderAccept)
-// 	}
-// 	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
-// 		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
-// 	}
-// 	req.Header.Add("User-Agent", useragent)
-
-// 	//process request
-// 	client := &http.Client{}
-// 	// resp, err := client.Do(req)
-// 	// if err != nil {
-// 	// 	log.Fatal(err)
-// 	// } else {
-// 	// 	log.Println(resp.StatusCode)
-// 	// 	log.Println(resp.Header)
-
-// 	// 	body := &bytes.Buffer{}
-// 	// 	_, _ = body.ReadFrom(resp.Body)
-// 	// 	resp.Body.Close()
-// 	// 	log.Println(body)
-// 	// }
-// 	return client.Do(req)
-// }
