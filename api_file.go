@@ -18,6 +18,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	_nethttp "net/http"
+	"net/url"
 	_neturl "net/url"
 	"os"
 	"strings"
@@ -885,11 +886,49 @@ CreateFile Create a File
 */
 func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
 	var (
+		localVarHTTPMethod  = _nethttp.MethodPost
 		localVarReturnValue File
 	)
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files"
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := _neturl.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"multipart/form-data"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
+		localVarHeaderParams["X-Hiarc-User-Key"] = parameterToString(localVarOptionals.XHiarcUserKey.Value(), "")
+	}
+
+	if ctx != nil {
+		// API Key Authentication
+		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
+			var key string
+			if auth.Prefix != "" {
+				key = auth.Prefix + " " + auth.Key
+			} else {
+				key = auth.Key
+			}
+			localVarHeaderParams["X-Hiarc-Api-Key"] = key
+		}
+	}
+
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -918,24 +957,54 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		}
 	}()
 
-	//construct request with rd
-	req, err := http.NewRequest("POST", localVarPath, r)
+	// Setup path and query parameters
+	url, err := url.Parse(localVarPath)
 	if err != nil {
 		return File{}, nil, err
 	}
 
-	if ctx != nil {
-		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
-			var key string
-			if auth.Prefix != "" {
-				key = auth.Prefix + " " + auth.Key
-			} else {
-				key = auth.Key
-			}
-			req.Header.Set("X-Hiarc-Api-Key", key)
+	// Override request host, if applicable
+	if a.client.cfg.Host != "" {
+		url.Host = a.client.cfg.Host
+	}
+
+	// Override request scheme, if applicable
+	if a.client.cfg.Scheme != "" {
+		url.Scheme = a.client.cfg.Scheme
+	}
+
+	// Adding Query Param
+	query := url.Query()
+	for k, v := range localVarQueryParams {
+		for _, iv := range v {
+			query.Add(k, iv)
 		}
+	}
+
+	// Encode the parameters.
+	url.RawQuery = query.Encode()
+
+	// Generate a new request
+	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
+	if err != nil {
+		return File{}, nil, err
+	}
+
+	// add header parameters, if any
+	if len(localVarHeaderParams) > 0 {
+		headers := http.Header{}
+		for h, v := range localVarHeaderParams {
+			headers.Set(h, v)
+		}
+		localVarRequest.Header = headers
+	}
+
+	// Add the user agent to the request.
+	localVarRequest.Header.Add("User-Agent", a.client.cfg.UserAgent)
+
+	if ctx != nil {
 		// add context to the request
-		req = req.WithContext(ctx)
+		localVarRequest = localVarRequest.WithContext(ctx)
 
 		// Walk through any authentication.
 
@@ -947,35 +1016,31 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 				return File{}, nil, err
 			}
 
-			latestToken.SetAuthHeader(req)
+			latestToken.SetAuthHeader(localVarRequest)
 		}
 
 		// Basic HTTP Authentication
 		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
-			req.SetBasicAuth(auth.UserName, auth.Password)
+			localVarRequest.SetBasicAuth(auth.UserName, auth.Password)
 		}
 
 		// AccessToken Authentication
 		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
-			req.Header.Add("Authorization", "Bearer "+auth)
+			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
 		}
 
 	}
 
-	// to determine the Accept header
-	localVarHTTPHeaderAccepts := []string{"application/json"}
+	for header, value := range a.client.cfg.DefaultHeader {
+		localVarRequest.Header.Add(header, value)
+	}
 
-	// set Accept header
-	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
-	if localVarHTTPHeaderAccept != "" {
-		req.Header.Set("Accept", localVarHTTPHeaderAccept)
-	}
-	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
-		req.Header.Set("X-Hiarc-User-Key", parameterToString(localVarOptionals.XHiarcUserKey.Value(), ""))
-	}
-	req.Header.Add("User-Agent", a.client.cfg.UserAgent)
-	localVarHTTPResponse, err := a.client.callAPI(req)
-	// localVarHTTPResponse, err := uploadFileRequest(ctx, localVarOptionals, localVarPath, filepath, chunkSize, cfr, a.client.cfg.UserAgent)
+	// r, err := a.client.prepareRequest(ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
+	// if err != nil {
+	// 	return localVarReturnValue, nil, err
+	// }
+
+	localVarHTTPResponse, err := a.client.callAPI(localVarRequest)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
