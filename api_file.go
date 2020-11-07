@@ -956,7 +956,7 @@ CreateFile Create a File
  * @param "XHiarcUserKey" (optional.String) -
 @return File
 */
-func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
+func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, filename string, cfr CreateFileRequest, localVarOptionals *CreateFileOpts) (File, *_nethttp.Response, error) {
 	var (
 		localVarHTTPMethod  = _nethttp.MethodPost
 		localVarReturnValue File
@@ -994,6 +994,9 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	jsonString, err := json.Marshal(cfr)
+	jsonDataHeader := textproto.MIMEHeader{}
+	jsonDataHeader.Set("Content-Type", "application/json")
+	jsonDataHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%s`, "request"))
 	if err != nil {
 		return localVarReturnValue, nil, err
 	}
@@ -1001,31 +1004,36 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		defer w.Close()
 		defer m.Close()
 
-		m.WriteField("request", string(jsonString))
 		file, err := os.Open(filepath)
 		if err != nil {
 			return
 		}
-		fi, err := file.Stat()
+		if filename == "" {
+			fi, err := file.Stat()
+			if err != nil {
+				return
+			}
+			filename = fi.Name()
+		}
+
+		part, err := m.CreatePart(jsonDataHeader)
 		if err != nil {
 			return
 		}
-		var filename string
-		if cfr.Name == "" {
-			fi.Name()
-		} else {
-			filename = cfr.Name
-		}
-		part, err := m.CreateFormFile("file", filename)
+		part.Write(jsonString)
+		mediaHeader := textproto.MIMEHeader{}
+		mediaHeader.Set("Content-Type", "application/octet-stream")
+		mediaHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			"file", filename))
+		mediaPart, err := m.CreatePart(mediaHeader)
 		if err != nil {
 			return
 		}
 		defer file.Close()
-		if _, err = io.Copy(part, file); err != nil {
+		if _, err = io.Copy(mediaPart, file); err != nil {
 			return
 		}
 	}()
-
 	// Setup path and query parameters
 	url, err := url.Parse(localVarPath)
 	if err != nil {
