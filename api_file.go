@@ -1038,6 +1038,7 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		localVarRequest.Header.Add(header, value)
 	}
 
+	localVarRequest.Header.Set("Content-Type", m.FormDataContentType())
 	log.Println("About to use localVarRequest")
 	log.Println(localVarRequest)
 
