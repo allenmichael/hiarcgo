@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"io"
 	_ioutil "io/ioutil"
+	"log"
 	"mime/multipart"
 	"net/http"
 	_nethttp "net/http"
@@ -495,8 +496,10 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
-	jsonString, _ := json.Marshal(av)
-
+	jsonString, err := json.Marshal(av)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
 	go func() {
 		defer w.Close()
 		defer m.Close()
@@ -535,7 +538,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 	if a.client.cfg.Scheme != "" {
 		url.Scheme = a.client.cfg.Scheme
 	}
-
+	log.Println("about to construct localvarrequest")
 	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -587,7 +590,8 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath s
 	}
 
 	localVarRequest.Header.Set("Content-Type", m.FormDataContentType())
-
+	log.Println("about to call localvarrequest")
+	log.Println(localVarRequest)
 	localVarHTTPResponse, err := a.client.callAPI(localVarRequest)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
@@ -976,8 +980,10 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
-	jsonString, _ := json.Marshal(cfr)
-
+	jsonString, err := json.Marshal(cfr)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
 	go func() {
 		defer w.Close()
 		defer m.Close()
