@@ -445,8 +445,6 @@ func (a *FileApiService) AddUserToFile(ctx _context.Context, key string, addUser
 // AddVersionOpts Optional parameters for the method 'AddVersion'
 type AddVersionOpts struct {
 	XHiarcUserKey optional.String
-	Request       optional.String
-	File          optional.Interface
 }
 
 /*
@@ -459,32 +457,16 @@ AddVersion Add a new File Version
  * @param "File" (optional.Interface of *os.File) -
 @return File
 */
-func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOptionals *AddVersionOpts) (File, *_nethttp.Response, error) {
+func (a *FileApiService) AddVersion(ctx _context.Context, key string, filepath string, av AddVersionToFileRequest, localVarOptionals *AddVersionOpts) (File, *_nethttp.Response, error) {
 	var (
-		localVarHTTPMethod   = _nethttp.MethodPut
-		localVarPostBody     interface{}
-		localVarFormFileName string
-		localVarFileName     string
-		localVarFileBytes    []byte
-		localVarReturnValue  File
+		localVarHTTPMethod  = _nethttp.MethodPut
+		localVarReturnValue File
 	)
 
 	// create path and map variables
 	localVarPath := a.client.cfg.BasePath + "/files/{key}/versions"
 	localVarPath = strings.Replace(localVarPath, "{"+"key"+"}", _neturl.QueryEscape(parameterToString(key, "")), -1)
-
 	localVarHeaderParams := make(map[string]string)
-	localVarQueryParams := _neturl.Values{}
-	localVarFormParams := _neturl.Values{}
-
-	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"multipart/form-data"}
-
-	// set Content-Type header
-	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	if localVarHTTPContentType != "" {
-		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	}
 
 	// to determine the Accept header
 	localVarHTTPHeaderAccepts := []string{"application/json"}
@@ -497,24 +479,7 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOp
 	if localVarOptionals != nil && localVarOptionals.XHiarcUserKey.IsSet() {
 		localVarHeaderParams["X-Hiarc-User-Key"] = parameterToString(localVarOptionals.XHiarcUserKey.Value(), "")
 	}
-	if localVarOptionals != nil && localVarOptionals.Request.IsSet() {
-		localVarFormParams.Add("request", parameterToString(localVarOptionals.Request.Value(), ""))
-	}
-	localVarFormFileName = "file"
-	var localVarFile *os.File
-	if localVarOptionals != nil && localVarOptionals.File.IsSet() {
-		localVarFileOk := false
-		localVarFile, localVarFileOk = localVarOptionals.File.Value().(*os.File)
-		if !localVarFileOk {
-			return localVarReturnValue, nil, reportError("file should be *os.File")
-		}
-	}
-	if localVarFile != nil {
-		fbs, _ := _ioutil.ReadAll(localVarFile)
-		localVarFileBytes = fbs
-		localVarFileName = localVarFile.Name()
-		localVarFile.Close()
-	}
+
 	if ctx != nil {
 		// API Key Authentication
 		if auth, ok := ctx.Value(ContextAPIKey).(APIKey); ok {
@@ -527,12 +492,103 @@ func (a *FileApiService) AddVersion(ctx _context.Context, key string, localVarOp
 			localVarHeaderParams["X-Hiarc-Api-Key"] = key
 		}
 	}
-	r, err := a.client.prepareRequest(ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
+
+	r, w := io.Pipe()
+	m := multipart.NewWriter(w)
+	jsonString, _ := json.Marshal(av)
+
+	go func() {
+		defer w.Close()
+		defer m.Close()
+
+		m.WriteField("request", string(jsonString))
+		file, err := os.Open(filepath)
+		if err != nil {
+			return
+		}
+		fi, err := file.Stat()
+		if err != nil {
+			return
+		}
+		part, err := m.CreateFormFile("file", fi.Name())
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		if _, err = io.Copy(part, file); err != nil {
+			return
+		}
+	}()
+
+	// Setup path and query parameters
+	url, err := url.Parse(localVarPath)
 	if err != nil {
 		return localVarReturnValue, nil, err
 	}
 
-	localVarHTTPResponse, err := a.client.callAPI(r)
+	// Override request host, if applicable
+	if a.client.cfg.Host != "" {
+		url.Host = a.client.cfg.Host
+	}
+
+	// Override request scheme, if applicable
+	if a.client.cfg.Scheme != "" {
+		url.Scheme = a.client.cfg.Scheme
+	}
+
+	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	// add header parameters, if any
+	if len(localVarHeaderParams) > 0 {
+		headers := http.Header{}
+		for h, v := range localVarHeaderParams {
+			headers.Set(h, v)
+		}
+		localVarRequest.Header = headers
+	}
+
+	// Add the user agent to the request.
+	localVarRequest.Header.Add("User-Agent", a.client.cfg.UserAgent)
+
+	if ctx != nil {
+		// add context to the request
+		localVarRequest = localVarRequest.WithContext(ctx)
+
+		// Walk through any authentication.
+
+		// OAuth2 authentication
+		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
+			// We were able to grab an oauth2 token from the context
+			var latestToken *oauth2.Token
+			if latestToken, err = tok.Token(); err != nil {
+				return localVarReturnValue, nil, err
+			}
+
+			latestToken.SetAuthHeader(localVarRequest)
+		}
+
+		// Basic HTTP Authentication
+		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
+			localVarRequest.SetBasicAuth(auth.UserName, auth.Password)
+		}
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
+		}
+
+	}
+
+	for header, value := range a.client.cfg.DefaultHeader {
+		localVarRequest.Header.Add(header, value)
+	}
+
+	localVarRequest.Header.Set("Content-Type", m.FormDataContentType())
+
+	localVarHTTPResponse, err := a.client.callAPI(localVarRequest)
 	if err != nil || localVarHTTPResponse == nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -893,15 +949,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 	localVarPath := a.client.cfg.BasePath + "/files"
 	localVarHeaderParams := make(map[string]string)
 
-	// to determine the Content-Type header
-	// localVarHTTPContentTypes := []string{"multipart/form-data"}
-
-	// set Content-Type header
-	// localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
-	// if localVarHTTPContentType != "" {
-	// 	localVarHeaderParams["Content-Type"] = localVarHTTPContentType
-	// }
-
 	// to determine the Accept header
 	localVarHTTPHeaderAccepts := []string{"application/json"}
 
@@ -970,17 +1017,6 @@ func (a *FileApiService) CreateFile(ctx _context.Context, filepath string, cfr C
 		url.Scheme = a.client.cfg.Scheme
 	}
 
-	// Adding Query Param
-	// query := url.Query()
-	// for k, v := range localVarQueryParams {
-	// 	for _, iv := range v {
-	// 		query.Add(k, iv)
-	// 	}
-	// }
-
-	// Encode the parameters.
-	// url.RawQuery = query.Encode()
-	// Generate a new request
 	localVarRequest, err := http.NewRequest(localVarHTTPMethod, url.String(), r)
 	if err != nil {
 		return localVarReturnValue, nil, err
